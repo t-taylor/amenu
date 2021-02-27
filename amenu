@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/zsh
 #
 # Fuzzy Finder Dynamic GUI Menu
 #
@@ -9,18 +9,13 @@
 #---------------------------------------
 
 TERMINAL=st
-# TERMINAL=termux
-# TERMINAL=xterm
 
 FLAG_CLASS=-c #st
-# FLAG_CLASS=-class  #xterm
-# FLAG_CLASS=--class #termite
 
 FLAG_GEOMETRY=-g #st
-# FLAG_GEOMETRY=-geometry #xterm
 
-WIDTH=40
-HEIGHT=10
+WIDTH=50
+HEIGHT=25
 OFFSET_X=450
 OFFSET_Y=200
 
@@ -52,11 +47,6 @@ run_menu() {
    prompt
    show
 }
-run_app() {
-   while IFS= read -r program; do
-      $program > /dev/null 2>&1 &
-   done < $FILE_CHOICES
-}
 prompt() {
    GEOMETRY=$WIDTH"x"$HEIGHT+$OFFSET_X+$OFFSET_Y
 
@@ -67,20 +57,12 @@ prompt() {
       -e "$SHELL" -c "fzf $PROMPT < $FILE_ARGS | tail -1 > $FILE_CHOICES" 2> /dev/null
    [ -s "$FILE_CHOICES" ] || exit 1
 }
-scan_apps() {
-   for program in /usr/bin/* /usr/local/bin/*; do
-      echo "${program##*/}"
-   done > $FILE_ARGS
-}
-run_launcher() {
-   scan_apps
-   prompt
-   run_app
+runner() {
+   echo ${(k)commands} | sed -e 's/ /\n/g' | run_menu | sh
 }
 main() {
    case $1 in
-      -l) run_launcher ;;
-      -p) PROMPT="--header $2" && run_menu ;;
+      -r) runner ;;
       *) run_menu ;;
    esac
 }
