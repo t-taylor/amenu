@@ -1,5 +1,5 @@
 .POSIX:
-DIR_BIN = /usr/local/bin
+DIR_BIN = /home/tom/.local/bin
 SCRIPT = $(shell grep -lr "^#\!" ./* | sed 's/.\///')
 CONFIG = $(shell find $$PWD -type f -name "*rc")
 init:
