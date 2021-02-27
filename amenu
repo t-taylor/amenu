@@ -36,6 +36,7 @@ export FZF_DEFAULT_OPTS="\
 
 FILE_ARGS=/tmp/AMENU_FILE_ARGS
 FILE_CHOICES=/tmp/AMENU_FILE_CHOICES
+CURRENT_WINDOWS=/tmp/AMENU_CURRENT_WINDOWS
 
 scan_args() {
    while IFS= read -r line; do echo "$line"; done
@@ -69,10 +70,32 @@ clippass() {
    [[ -n $password ]] || exit
    pass show -c "$password" 2>/dev/null
 }
+echowind() {
+   windows=$(wmctrl -l | cut -c -10)
+   echo $windows > $CURRENT_WINDOWS
+   class=$(echo $windows | xargs -I % sh -c 'xprop -id % WM_CLASS | sed -e "s/^.*, //" -e "s/\"//g"')
+   descs=$(echo $windows | xargs -I % sh -c 'xprop -id % WM_NAME | sed -e "s/^.*= //" -e "s/\"//g"')
+
+   n=$(echo $windows | wc -l)
+   for i in $(seq $n)
+   do
+      c=$(echo $class | sed "$i q;d")
+      d=$(echo $descs | sed "$i q;d")
+      echo $i $c $d
+   done
+}
+selwind() {
+   n=$(echowind | run_menu | sed 's/ .*$//')
+   if [[ $n ]]
+   then
+      wmctrl -i -a $(cat $CURRENT_WINDOWS | sed "$n q;d")
+   fi
+}
 main() {
    case $1 in
       -r) runner ;;
       -p) clippass ;;
+      -w) selwind ;;
       *) run_menu ;;
    esac
 }
