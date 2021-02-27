@@ -28,7 +28,7 @@ export FZF_DEFAULT_OPTS="\
    --bind esc:cancel
    --bind tab:down
    --bind btab:up
-"
+   "
 
 #---------------------------------------
 #               Script
@@ -55,14 +55,24 @@ prompt() {
       $FLAG_CLASS amenu \
       $FLAG_GEOMETRY $GEOMETRY \
       -e "$SHELL" -c "fzf $PROMPT < $FILE_ARGS | tail -1 > $FILE_CHOICES" 2> /dev/null
-   [ -s "$FILE_CHOICES" ] || exit 1
-}
-runner() {
-   echo ${(k)commands} | sed -e 's/ /\n/g' | run_menu | sh
+         [ -s "$FILE_CHOICES" ] || exit 1
+      }
+   runner() {
+      echo ${(k)commands} | sed -e 's/ /\n/g' | run_menu | sh
+   }
+clippass() {
+   prefix=${PASSWORD_STORE_DIR-~/.password-store}
+   password_files=( "$prefix"/**/*.gpg )
+   password_files=( "${password_files[@]#"$prefix"/}" )
+   password_files=( "${password_files[@]%.gpg}" )
+   password=$(printf '%s\n' "${password_files[@]}" | run_menu)
+   [[ -n $password ]] || exit
+   pass show -c "$password" 2>/dev/null
 }
 main() {
    case $1 in
       -r) runner ;;
+      -p) clippass ;;
       *) run_menu ;;
    esac
 }
